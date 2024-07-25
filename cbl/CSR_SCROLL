@@ -1,0 +1,91 @@
+      *----------------------------------------------------------------*
+      *-- CURSOR DECLARE : CSR_$tabela --
+      *----------------------------------------------------------------*
+      *
+       01 IX                                PIC S9(04) COMP VALUE 0.
+       01 GDA-ROWS                          PIC S9(04) COMP VALUE 201.
+       01 GDA-PSC-CURSOR                    PIC S9(09) COMP VALUE 001.
+       01 QT-PSQ-$tabela                   PIC S9(09) COMP VALUE 000.
+      *
+       01 CTL-CSR-$tabela.
+          05 CONTA-$tabela                 PIC 9(08) VALUE  0.
+          05 CSR-ATUAL                      PIC X(15) VALUE ' '.
+          05 CSR-ACAO                       PIC X(06) VALUE ' '.
+          05 FLAG-STS-CSR                   PIC X(01) VALUE 'N'.
+             88 CSR-FECHADO                           VALUE 'N'.
+             88 CSR-ABERTO                            VALUE 'S'.
+          05 PESQUISA-$tabela              PIC X(01) VALUE 'N'.
+             88 FIM-$tabela                           VALUE 'S'.
+      *
+             EXEC SQL
+                DECLARE CSR_$tabela CURSOR  SCROLL CURSOR
+                      WITH ROWSET POSITIONING FOR
+(QUERY)
+             END-EXEC.
+      *
+      *----------------------------------------------------------------*
+       100-000-CONSULTA-$tabela     SECTION.
+      *----------------------------------------------------------------*
+      *
+           PERFORM 100-001-OPEN-CSR-$tabela
+      *
+           MOVE 'FETCH'                TO CSR-ACAO
+           EXEC SQL
+           FETCH FETCH ROWSET STARTING AT ABSOLUTE :GDA-PSC-CURSOR
+               CSR_$tabela FOR :GDA-ROWS ROWS
+               INTO
+$fetch
+           END-EXEC.
+      *
+           MOVE  SQLERRD (3)           TO QT-PSQ-$tabela
+      *
+           IF  SQLCODE NOT EQUAL +0
+           AND SQLCODE NOT EQUAL +100
+               PERFORM $erro_db2
+           END-IF
+      *
+           PERFORM 100-999-CLOSE-CSR-$tabela
+      *
+           PERFORM 100-500-MOVE-$tabela
+               VARYING IX FROM 1 BY 1
+               UNTIL IX > QT-PSQ-$tabela
+           .
+       100-000-EXIT.
+           EXIT.
+      *----------------------------------------------------------------*
+       100-500-MOVE-$tabela     SECTION.
+      *----------------------------------------------------------------*
+      *
+$move_host
+           .
+       100-500-EXIT.
+           EXIT.
+      *----------------------------------------------------------------*
+       100-001-OPEN-CSR-$tabela      SECTION.
+      *----------------------------------------------------------------*
+      *
+$move_condition
+      *
+           MOVE 'OPEN'               TO CSR-ACAO
+           EXEC SQL OPEN CSR_$tabela END-EXEC
+           IF SQLCODE NOT EQUAL +0
+              PERFORM $erro_db2
+           END-IF
+           SET  CSR-ABERTO           TO TRUE
+           .
+       100-001-EXIT.
+           EXIT.
+      *----------------------------------------------------------------*
+       100-999-CLOSE-CSR-$tabela    SECTION.
+      *----------------------------------------------------------------*
+      *
+           MOVE 'CLOSE'                TO CSR-ACAO
+           EXEC SQL CLOSE CSR_$tabela END-EXEC
+           IF SQLCODE NOT EQUAL +0
+              PERFORM $erro_db2
+           END-IF
+           SET  FIM-$tabela            TO TRUE
+           SET  CSR-FECHADO             TO TRUE
+           .
+       100-999-EXIT.
+           EXIT.

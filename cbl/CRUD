@@ -1,0 +1,18 @@
+      *----------------------------------------------------------------*
+       100-000-$crud-$tabela SECTION.
+      *----------------------------------------------------------------*
+      *
+$move_condition
+      *
+          EXEC SQL
+(QUERY)
+          END-EXEC.
+      *
+          IF SQLCODE NOT EQUAL ZEROES
+      *   TRATAMENTO DE ERROS     
+      *      EXEC CICS SYNCPOINT ROLLBACK END-EXEC (ONLINE)
+      *      EXEC SQL ROLLBACK END-EXEC            (BATCH )
+          END-IF.
+      *
+       100-000-EXIT.
+          EXIT.

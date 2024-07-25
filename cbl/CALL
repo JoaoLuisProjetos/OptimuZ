@@ -1,0 +1,43 @@
+      *
+       77  W-CONTA-$subrotina           PIC 9(010)      VALUE  ZEROES.
+      *
+       01  $subrotina-DADOS.
+-INC   $book
+      *
+      *----------------------------------------------------------------*
+       200-000-ROTINA-$subrotina SECTION.
+      *----------------------------------------------------------------*
+      *
+           INITIALIZE  $subrotina-DADOS.
+      *
+$move_area
+      *
+(CALL)
+      *
+           IF  $prefix-CD-RTN   NOT EQUAL 00
+               PERFORM 999-000-ERRO-$subrotina
+           ELSE
+               ADD  1                      TO  W-CONTA-$subrotina
+           END-IF.
+      *
+       200-000-FIM.
+           EXIT.
+      *----------------------------------------------------------------*
+       999-000-ERRO-$subrotina.
+      *----------------------------------------------------------------*
+      *
+      *
+
+(Default)
+           CALL $subrotina USING $book
+
+(Batch)
+           MOVE LENGTH OF $subrotina-DADOS   TO  EIBCALEN
+           CALL $subrotina USING DFHEIBLK $subrotina-DADOS.
+
+(CICS)
+           EXEC CICS LINK PROGRAM  ($subrotina)
+                          COMMAREA ($book)
+                          LENGTH   (LENGTH OF $book)
+                          NOHANDLE
+           END-EXEC.

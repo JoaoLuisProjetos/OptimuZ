@@ -1,0 +1,93 @@
+      *----------------------------------------------------------------*
+      *-- CURSOR DECLARE : CSR_$tabela --
+      *----------------------------------------------------------------*
+      *
+      01 CTL-CSR-$tabela.
+         05 CONTA-$tabela                  PIC 9(8) VALUE ZEROES.
+         05 FLAG-STS-$tabela               PIC X(1) VALUE 'N'.
+            88 CSR-$tabela-FECHADO                  VALUE 'N'.
+            88 CSR-$tabela-ABERTO                   VALUE 'S'.
+         05 PESQUISA-$tabela               PIC X(1) VALUE 'N'.
+            88 FIM-$tabela                          VALUE 'S'.
+      *
+           EXEC SQL 
+              DECLARE CSR_$tabela CURSOR FOR
+(QUERY)
+           END-EXEC.
+      *
+      *----------------------------------------------------------------*
+       100-000-FETCH-CSR-$tabela     SECTION.
+      *----------------------------------------------------------------*
+      *
+           IF CSR-$tabela-FECHADO
+              PERFORM 100-001-OPEN-CSR-$tabela
+           END-IF.
+      *
+           EXEC SQL 
+           FETCH CSR_$tabela INTO
+$fetch
+           END-EXEC.
+      *
+           EVALUATE SQLCODE
+              WHEN 0     PERFORM 100-500-VALIDA-$tabela
+
+
+$move_host
+              WHEN 100   PERFORM 100-999-CLOSE-CSR-$tabela
+              WHEN OTHER
+      * TRATAMENTO DE ERRO
+           END-EVALUATE.
+      *
+       100-000-EXIT.
+           EXIT.
+      *
+      *----------------------------------------------------------------*
+       100-500-VALIDA-$tabela     SECTION.
+      *----------------------------------------------------------------*
+      *
+                 ADD 1 TO CONTA-$tabela
+      *
+(trecho_valida)
+      *
+$move_host
+      *
+       100-500-EXIT.
+           EXIT.
+      *
+      *----------------------------------------------------------------*
+       100-001-OPEN-CSR-$tabela      SECTION.
+      *----------------------------------------------------------------*
+      *
+$move_condition
+      *
+           EXEC SQL
+              OPEN CSR_$tabela
+           END-EXEC
+      *
+           IF SQLCODE NOT EQUAL ZEROES
+      * TRATAMENTO DE ERRO
+           ELSE
+              SET  CSR-$tabela-ABERTO           TO TRUE
+           END-IF.
+      *
+       100-001-EXIT.
+           EXIT.
+      *----------------------------------------------------------------*
+       100-999-CLOSE-CSR-$tabela    SECTION.
+      *----------------------------------------------------------------*
+      *
+           IF CSR-$tabela-ABERTO
+              EXEC SQL
+                 CLOSE CSR_$tabela
+              END-EXEC
+      *
+              IF SQLCODE NOT EQUAL ZEROES
+      * TRATAMENTO DE ERRO
+              ELSE
+                 SET  FIM-$tabela               TO TRUE
+                 SET  CSR-$tabela-FECHADO       TO TRUE
+              END-IF
+           END-IF.
+      *
+       100-999-EXIT.
+           EXIT.

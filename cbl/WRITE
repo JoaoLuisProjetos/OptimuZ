@@ -1,0 +1,73 @@
+      * ARQUIVO  -  $arquivo
+                 SELECT $arquivo ASSIGN TO UT-S-$arquivo.
+                    FILE STATUS IS W-STS-$arquivo.
+      *
+       01  GDA-ACAO                        PIC X(06) VALUE SPACES.
+      *
+       01  W-STS-$arquivo                  PIC X(02) VALUE '00'.
+           88  OK-$arquivo                           VALUE '00'.
+           88  FIM-$arquivo                          VALUE '10'.
+       *
+       01  W-CONTROLE-$arquivo.
+           05  W-CT-$arquivo               PIC 9(09) VALUE ZEROES.
+           05  W-FLG-$arquivo              PIC X(01) VALUE 'N'
+               88  $arquivo-ABERTO                   VALUE 'S'.
+               88  $arquivo-FECHADO                  VALUE 'N'.
+      *
+      *----------------------------------------------------------------*
+       200-000-WRITE-$arquivo SECTION.
+      *----------------------------------------------------------------*
+      *
+           IF $arquivo-FECHADO
+              PERFORM 200-001-ABRIR-$arquivo
+           END-IF.
+      *
+           ADD 1 TO W-CT-$arquivo.
+      *
+$move_condition
+      *
+           MOVE 'WRITE'         TO  GDA-ACAO
+           WRITE  $arquivo
+           PERFORM 220-000-VERIFICA-$arquivo.
+      *
+       200-000-FIM. 
+           EXIT.
+      *----------------------------------------------------------------*
+       220-000-VERIFICA-$arquivo SECTION.
+      *----------------------------------------------------------------*   
+      *
+           IF  NOT OK-$arquivo
+           AND NOT FIM-$arquivo
+      *        TRATA-ERRO
+           END-IF.
+      *
+       220-000-FIM. 
+           EXIT.
+      *----------------------------------------------------------------*
+       200-001-ABRIR-$arquivo SECTION.
+      *----------------------------------------------------------------*
+      *
+           IF $arquivo-FECHADO
+              OPEN $in_out $arquivo
+              MOVE 'Abrir'             TO  GDA-ACAO
+              SET  $arquivo-ABERTO   TO  TRUE
+           END-IF.
+      *
+           PERFORM 220-000-VERIFICA-$arquivo.
+      *
+       200-001-FIM. 
+           EXIT.
+      *----------------------------------------------------------------*
+       200-999-FECHAR-$arquivo SECTION.
+      *----------------------------------------------------------------*
+      *
+           IF $arquivo-ABERTO
+              CLOSE $arquivo
+              MOVE 'Fechar'            TO  GDA-ACAO
+              SET  $arquivo-FECHADO  TO  TRUE
+           END-IF.
+      *
+           PERFORM 220-000-VERIFICA-$arquivo.
+      *
+       200-999-FIM.
+           EXIT.

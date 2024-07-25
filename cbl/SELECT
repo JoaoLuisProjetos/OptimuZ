@@ -1,0 +1,21 @@
+      *----------------------------------------------------------------*
+       100-000-SELECT-$tabela       SECTION.
+      *----------------------------------------------------------------*
+      *
+$move_condition
+      *
+           EXEC SQL
+(QUERY)
+           END-EXEC.
+      *
+           EVALUATE SQLCODE
+              WHEN 0
+$move_host
+              WHEN 100
+      * TRATAMENTO - CONSULTA NAO ENCONTRADA
+              WHEN OTHER
+      * TRATAMENTO DE ERRO
+           END-EVALUATE.
+      *
+       100-000-EXIT.
+           EXIT.
